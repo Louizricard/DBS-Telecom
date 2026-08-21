@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme.dart';
 import '../../data/services/api_service.dart';
 
@@ -112,12 +114,19 @@ class _ChatScreenState extends State<ChatScreen> {
           color: backgroundColor,
           borderRadius: borderRadius,
         ),
-        child: Text(
-          message.text,
+        child: Linkify(
+          onOpen: (link) async {
+            await launchUrl(Uri.parse(link.url));
+          },
+          text: message.text,
           style: const TextStyle(
             color: AppTheme.branco,
             fontFamily: 'Montserrat',
             fontSize: 16,
+          ),
+          linkStyle: const TextStyle(
+            color: Colors.lightBlue,
+            decoration: TextDecoration.underline,
           ),
         ),
       ),

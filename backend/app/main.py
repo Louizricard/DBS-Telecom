@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.services.ixc_service import IXCService
 from app.services.chat_engine import ChatEngine
+from datetime import datetime
 
 app = FastAPI(title="DBS Telecom Backend - MVP")
 ixc_service = IXCService()
@@ -33,7 +34,9 @@ def processar_mensagem(req: ChatRequest):
     if resultado["acao"] == "buscar_boleto":
         boleto = ixc_service.buscar_boleto(req.cliente_id)
         if boleto:
-            resultado["resposta"] = f"Encontrei seu boleto no valor de R$ {boleto['valor']} com vencimento para {boleto['vencimento']}. Você pode acessá-lo aqui: {boleto['link']}"
+            data_vencimento = datetime.strptime(boleto['vencimento'], '%Y-%m-%d').strftime('%d/%m/%Y')
+            valor_formatado = f"{float(boleto['valor']):,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+            resultado["resposta"] = f"Encontrei seu boleto no valor de R$ {valor_formatado} com vencimento para {data_vencimento}. Você pode acessá-lo aqui: {boleto['link']}"
         else:
             resultado["resposta"] = "Consultei o sistema, mas não encontrei nenhum boleto em aberto para o seu cadastro no momento."
             
