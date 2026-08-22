@@ -4,15 +4,12 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   static String get baseUrl {
-    try {
-      if (Platform.isAndroid) return 'http://10.0.2.2:8000/api';
-    } catch (_) {}
-    return 'http://127.0.0.1:8000/api';
+    return 'https://dbs-telecom.onrender.com';
   }
 
   Future<Map<String, dynamic>> identificarCliente(String documento) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/identificar'),
+      Uri.parse('$baseUrl/api/identificar'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'documento': documento}),
     );
@@ -24,13 +21,14 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> enviarMensagemChat(String clienteId, String mensagem) async {
+  Future<Map<String, dynamic>> enviarMensagemChat(String clienteId, String mensagem, String contexto) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/chat'),
+      Uri.parse('$baseUrl/api/chat'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'cliente_id': clienteId,
         'mensagem': mensagem,
+        'contexto': contexto,
       }),
     );
 

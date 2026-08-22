@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme.dart';
 import '../../data/services/api_service.dart';
@@ -7,8 +9,21 @@ import '../../data/services/api_service.dart';
 class ChatMessage {
   final String text;
   final bool isUser;
+  final List<String> sugestoes;
 
-  ChatMessage({required this.text, required this.isUser});
+  ChatMessage({required this.text, required this.isUser, this.sugestoes = const []});
+
+  Map<String, dynamic> toJson() => {
+    'text': text,
+    'isUser': isUser,
+    'sugestoes': sugestoes,
+  };
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+    text: json['text'],
+    isUser: json['isUser'],
+    sugestoes: List<String>.from(json['sugestoes'] ?? []),
+  );
 }
 
 class ChatScreen extends StatefulWidget {
@@ -31,16 +46,43 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
+  String _departamentoAtual = "Atendimento Inicial";
+  String _contextoAtual = "";
 
   @override
   void initState() {
     super.initState();
-    _messages.add(
-      ChatMessage(
-        text: 'Olá, ${widget.nome}! 👋 Sou o assistente virtual da DBS TELECOM. Como posso ajudar você hoje?',
-        isUser: false,
-      ),
-    );
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getString('chat_history_${widget.clienteId}');
+    if (historyJson != null) {
+      final List<dynamic> decoded = jsonDecode(historyJson);
+      setState(() {
+        _messages.clear();
+        _messages.addAll(decoded.map((e) => ChatMessage.fromJson(e)).toList());
+      });
+      _scrollToBottom();
+    } else {
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: 'Olá, ${widget.nome}! 👋 Sou o assistente virtual da DBS TELECOM. Como posso ajudar você hoje?',
+            isUser: false,
+            sugestoes: ["Ver planos", "2ª via do boleto", "Estou sem internet"],
+          ),
+        );
+      });
+      _saveHistory();
+    }
+  }
+
+  Future<void> _saveHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = jsonEncode(_messages.map((m) => m.toJson()).toList());
+    await prefs.setString('chat_history_${widget.clienteId}', encoded);
   }
 
   void _scrollToBottom() {
@@ -55,6 +97,11 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  void _sendQuickAction(String text) {
+    _textController.text = text;
+    _sendMessage();
+  }
+
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
@@ -63,26 +110,43 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.add(ChatMessage(text: text, isUser: true));
       _isLoading = true;
     });
+    _saveHistory();
     _textController.clear();
     _scrollToBottom();
 
     try {
-      final response = await _apiService.enviarMensagemChat(widget.clienteId, text);
+      final response = await _apiService.enviarMensagemChat(widget.clienteId, text, _contextoAtual);
       final reply = response['resposta']?.toString() ?? 'Desculpe, ocorreu um erro ao processar a resposta.';
+      final setor = response['setor']?.toString();
+      final sugestoes = List<String>.from(response['sugestoes'] ?? []);
+
       if (mounted) {
         setState(() {
-          _messages.add(ChatMessage(text: reply, isUser: false));
+          _contextoAtual = response['contexto']?.toString() ?? "";
+          _messages.add(ChatMessage(text: reply, isUser: false, sugestoes: sugestoes));
           _isLoading = false;
+          if (setor == 'comercial') {
+            _departamentoAtual = "Setor Comercial 🤝";
+          } else if (setor == 'suporte') {
+            _departamentoAtual = "Suporte Técnico 🛠️";
+          } else if (setor == 'financeiro') {
+            _departamentoAtual = "Setor Financeiro 💰";
+          }
         });
+        _saveHistory();
         _scrollToBottom();
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _messages.add(ChatMessage(text: 'Erro de conexão.', isUser: false));
           _isLoading = false;
         });
-        _scrollToBottom();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Erro de conexão. Verifique sua internet ou tente novamente mais tarde."),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -97,17 +161,15 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildMessageBubble(ChatMessage message) {
     final isUser = message.isUser;
     final alignment = isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final backgroundColor = isUser ? AppTheme.laranjaVibrante : AppTheme.cinzaEscuro;
-    final borderRadius = BorderRadius.only(
-      topLeft: const Radius.circular(16),
-      topRight: const Radius.circular(16),
-      bottomLeft: isUser ? const Radius.circular(16) : const Radius.circular(0),
-      bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(16),
-    );
+    final backgroundColor = isUser ? const Color(0xFFF84B03) : const Color(0xFF4B4C51);
+    final borderRadius = BorderRadius.circular(12);
 
     return Align(
       alignment: alignment,
       child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         decoration: BoxDecoration(
@@ -135,13 +197,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ultimasDoBot = _messages.where((m) => !m.isUser);
+    final sugestoesAtuais = ultimasDoBot.isNotEmpty ? ultimasDoBot.last.sugestoes : <String>[];
+
     return Scaffold(
       backgroundColor: AppTheme.branco,
       appBar: AppBar(
         backgroundColor: AppTheme.laranjaVibrante,
-        title: const Text(
-          'Atendimento DBS',
-          style: TextStyle(
+        title: Text(
+          'DBS - $_departamentoAtual',
+          style: const TextStyle(
             fontFamily: 'Montserrat',
             color: AppTheme.branco,
           ),
@@ -175,6 +240,30 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             ),
+          sugestoesAtuais.isNotEmpty && !_isLoading
+              ? SizedBox(
+                  height: 50,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: sugestoesAtuais.map((sugestao) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ActionChip(
+                          label: Text(sugestao),
+                          onPressed: () => _sendQuickAction(sugestao),
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFFF84B03)),
+                          labelStyle: const TextStyle(
+                            color: Color(0xFFF84B03),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                )
+              : const SizedBox.shrink(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(

@@ -1,58 +1,67 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../../core/theme.dart';
 import '../../data/services/api_service.dart';
-import 'chat_screen.dart';
+import 'home_screen.dart';
 
-class IdentificacaoScreen extends StatefulWidget {
-  const IdentificacaoScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<IdentificacaoScreen> createState() => _IdentificacaoScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _IdentificacaoScreenState extends State<IdentificacaoScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _documentoController = TextEditingController();
-  final ApiService _apiService = ApiService();
   bool _isLoading = false;
 
   Future<void> _iniciarAtendimento() async {
-    final documento = _documentoController.text.trim();
-    if (documento.isEmpty) return;
+    final cpfDigitado = _documentoController.text.trim();
+    if (cpfDigitado.isEmpty) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final resultado = await _apiService.identificarCliente(documento);
-      
+      final String loginUrl = '${ApiService.baseUrl}/login';
+      final response = await http.post(
+        Uri.parse(loginUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'cpf': cpfDigitado}),
+      );
+
       if (!mounted) return;
 
-      final clienteId = resultado['cliente_id'].toString();
-      final nome = resultado['nome'].toString();
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            clienteId: clienteId,
-            nome: nome,
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(
+              clienteCpf: data['clienteCpf'],
+              clienteNome: data['clienteNome'],
+              clientePlano: data['clientePlano'],
+              faturaData: data['faturaData'],
+              faturaValor: data['faturaValor'],
+              faturaLink: data['faturaLink'],
+            ),
           ),
-        ),
-      );
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cliente não encontrado ou erro de conexão'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
-      
-      // Exibe a mensagem de erro real para ajudar no diagnóstico
-      String errorMessage = 'Erro de conexão: Não foi possível acessar o servidor.';
-      if (e.toString().contains('Cliente não encontrado')) {
-        errorMessage = 'Cliente não encontrado na base de dados.';
-      } else {
-        errorMessage = 'Erro no servidor: $e';
-      }
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
+        const SnackBar(
+          content: Text('Cliente não encontrado ou erro de conexão'),
           backgroundColor: Colors.red,
         ),
       );
