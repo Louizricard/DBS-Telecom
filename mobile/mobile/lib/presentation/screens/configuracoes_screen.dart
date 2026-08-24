@@ -36,7 +36,6 @@ class _ConfiguracoesScreenState extends State<ConfiguracoesScreen> {
             leading: const Icon(Icons.person),
             title: const Text('Meu Perfil'),
             subtitle: Text(widget.clienteNome),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {},
           ),
           const SizedBox(height: 8),
@@ -85,7 +84,32 @@ class _ConfiguracoesScreenState extends State<ConfiguracoesScreen> {
           const SizedBox(height: 8),
           ListTile(
             title: const Text('Termos de Uso'),
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Termos de Uso'),
+                  content: const SingleChildScrollView(
+                    child: Text(
+                      'Bem-vindo ao aplicativo da DBS Telecom!\n\n'
+                      'Ao utilizar este aplicativo, você concorda com as diretrizes de uso, '
+                      'comprometendo-se a manter seus dados atualizados e a não utilizar a plataforma para fins ilícitos.\n\n'
+                      'O aplicativo é disponibilizado "no estado em que se encontra", '
+                      'podendo passar por atualizações e manutenções sem aviso prévio.',
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Fechar',
+                        style: TextStyle(color: Color(0xFFF84B03)),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
           ListTile(
             title: const Text('Versão do Aplicativo'),

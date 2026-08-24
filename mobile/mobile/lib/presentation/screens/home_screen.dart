@@ -38,9 +38,10 @@ class HomeScreen extends StatelessWidget {
             UserAccountsDrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFFF84B03)),
               accountName: Text(clienteNome),
-              accountEmail: Text('Plano: $clientePlano'),
+              accountEmail: null,
               currentAccountPicture: const CircleAvatar(
-                child: Icon(Icons.person),
+                radius: 40.0,
+                child: Icon(Icons.person, size: 40.0),
               ),
             ),
             ListTile(
@@ -123,7 +124,7 @@ class HomeScreen extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text('🟢 Conectado\n$clientePlano'),
+                  subtitle: Text('🟢 Conectado\n${clientePlano.replaceFirst('Velocidade ', 'Velocidade: ')}'),
                 ),
               ),
               const SizedBox(height: 16),
@@ -160,9 +161,10 @@ class HomeScreen extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Funcionalidade em desenvolvimento.'),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FaturasScreen(cpf: clienteCpf),
                                 ),
                               );
                             },

@@ -17,8 +17,19 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _iniciarAtendimento() async {
+    FocusScope.of(context).unfocus();
+
+    if (_documentoController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Por favor, preencha com seu CPF para verificar seus dados'),
+        ),
+      );
+      return;
+    }
+
     final cpfDigitado = _documentoController.text.trim();
-    if (cpfDigitado.isEmpty) return;
 
     setState(() {
       _isLoading = true;
@@ -51,8 +62,8 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cliente não encontrado ou erro de conexão'),
+          SnackBar(
+            content: Text('Erro ${response.statusCode}: ${response.body}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -60,8 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cliente não encontrado ou erro de conexão'),
+        SnackBar(
+          content: Text('Exceção: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -104,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 48),
               TextField(
                 controller: _documentoController,
+                enabled: !_isLoading,
                 keyboardType: TextInputType.number,
                 style: const TextStyle(fontFamily: 'Montserrat'),
                 decoration: InputDecoration(

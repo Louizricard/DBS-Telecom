@@ -241,26 +241,37 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           sugestoesAtuais.isNotEmpty && !_isLoading
-              ? SizedBox(
-                  height: 50,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    children: sugestoesAtuais.map((sugestao) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ActionChip(
-                          label: Text(sugestao),
-                          onPressed: () => _sendQuickAction(sugestao),
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(color: Color(0xFFF84B03)),
-                          labelStyle: const TextStyle(
-                            color: Color(0xFFF84B03),
-                            fontWeight: FontWeight.bold,
-                          ),
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Clique na opção desejada abaixo:',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
                         ),
-                      );
-                    }).toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 8.0,
+                        children: sugestoesAtuais.map((sugestao) {
+                          return ActionChip(
+                            label: Text(sugestao),
+                            onPressed: () => _sendQuickAction(sugestao),
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(color: Color(0xFFF84B03)),
+                            labelStyle: const TextStyle(
+                              color: Color(0xFFF84B03),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 )
               : const SizedBox.shrink(),

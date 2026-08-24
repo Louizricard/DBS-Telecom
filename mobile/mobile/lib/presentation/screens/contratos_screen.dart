@@ -75,7 +75,8 @@ class _ContratosScreenState extends State<ContratosScreen> {
                   itemCount: _contratos.length,
                   itemBuilder: (context, index) {
                     final contrato = _contratos[index];
-                    final plano = contrato['plano'] ?? 'Desconhecido';
+                    final planoString = contrato['plano'] ?? 'Desconhecido';
+                    final plano = planoString.toString().replaceFirst('Velocidade ', 'Velocidade: ');
                     final status = contrato['status'] ?? 'desconhecido';
                     final dataAtivacao = contrato['data_ativacao'] ?? 'N/A';
 
