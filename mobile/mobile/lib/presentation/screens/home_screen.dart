@@ -228,6 +228,45 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Termos de Uso'),
+                        content: const SingleChildScrollView(
+                          child: Text(
+                            'Bem-vindo ao aplicativo da DBS Telecom!\n\n'
+                            'Ao utilizar este aplicativo, você concorda com as diretrizes de uso, '
+                            'comprometendo-se a manter seus dados atualizados e a não utilizar a plataforma para fins ilícitos.\n\n'
+                            'O aplicativo é disponibilizado "no estado em que se encontra", '
+                            'podendo passar por atualizações e manutenções sem aviso prévio.',
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text(
+                              'Fechar',
+                              style: TextStyle(color: Color(0xFFF84B03)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Termos de Uso',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

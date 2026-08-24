@@ -52,7 +52,7 @@ class _ConfiguracoesScreenState extends State<ConfiguracoesScreen> {
           const SizedBox(height: 8),
           SwitchListTile(
             title: const Text('Notificações Push'),
-            activeColor: const Color(0xFFF84B03),
+            activeThumbColor: const Color(0xFFF84B03),
             value: _notificacoesPush,
             onChanged: (bool value) {
               setState(() {
@@ -62,7 +62,7 @@ class _ConfiguracoesScreenState extends State<ConfiguracoesScreen> {
           ),
           SwitchListTile(
             title: const Text('Mensagens SMS'),
-            activeColor: const Color(0xFFF84B03),
+            activeThumbColor: const Color(0xFFF84B03),
             value: _mensagensSms,
             onChanged: (bool value) {
               setState(() {
@@ -82,35 +82,6 @@ class _ConfiguracoesScreenState extends State<ConfiguracoesScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          ListTile(
-            title: const Text('Termos de Uso'),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Termos de Uso'),
-                  content: const SingleChildScrollView(
-                    child: Text(
-                      'Bem-vindo ao aplicativo da DBS Telecom!\n\n'
-                      'Ao utilizar este aplicativo, você concorda com as diretrizes de uso, '
-                      'comprometendo-se a manter seus dados atualizados e a não utilizar a plataforma para fins ilícitos.\n\n'
-                      'O aplicativo é disponibilizado "no estado em que se encontra", '
-                      'podendo passar por atualizações e manutenções sem aviso prévio.',
-                    ),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Fechar',
-                        style: TextStyle(color: Color(0xFFF84B03)),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
           ListTile(
             title: const Text('Versão do Aplicativo'),
             subtitle: const Text('1.0.0 (MVP)'),

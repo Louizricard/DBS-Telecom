@@ -60,10 +60,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         );
+      } else if (response.statusCode == 404) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cliente não encontrado. Verifique o CPF/CNPJ digitado.'),
+            backgroundColor: Colors.red,
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ${response.statusCode}: ${response.body}'),
+          const SnackBar(
+            content: Text('Ocorreu um erro ao processar sua solicitação. Tente novamente.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -71,8 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Exceção: $e'),
+        const SnackBar(
+          content: Text('Erro de conexão. Verifique sua internet e tente novamente.'),
           backgroundColor: Colors.red,
         ),
       );
