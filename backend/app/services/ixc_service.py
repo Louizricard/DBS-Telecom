@@ -17,9 +17,19 @@ class IXCService:
         }
 
     def buscar_cliente_por_documento(self, documento: str) -> dict:
+        import re
         # A IXC salva o documento com máscara (ex: 773.875.706-04), então 
-        # testamos tanto o valor exato digitado quanto uma versão com LIKE se necessário.
-        doc_busca = documento.strip()
+        # formatamos o documento antes de buscar se ele tiver 11 ou 14 dígitos.
+        doc_original = documento.strip()
+        doc_numeros = re.sub(r'\D', '', doc_original)
+        
+        if len(doc_numeros) == 11:
+            doc_busca = f"{doc_numeros[:3]}.{doc_numeros[3:6]}.{doc_numeros[6:9]}-{doc_numeros[9:]}"
+        elif len(doc_numeros) == 14:
+            doc_busca = f"{doc_numeros[:2]}.{doc_numeros[2:5]}.{doc_numeros[5:8]}/{doc_numeros[8:12]}-{doc_numeros[12:]}"
+        else:
+            doc_busca = doc_original
+            
         endpoint = f"{self.url}/cliente"
         
         payload = {
