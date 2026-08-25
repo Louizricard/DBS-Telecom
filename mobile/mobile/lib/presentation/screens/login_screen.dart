@@ -1,9 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/theme.dart';
 import '../../data/services/api_service.dart';
 import 'home_screen.dart';
+
+class CpfCnpjFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text.replaceAll(RegExp(r'\D'), '');
+
+    if (text.length > 14) return oldValue;
+
+    String formattedText = text;
+
+    if (text.length <= 11) {
+      if (text.length > 3) formattedText = '${text.substring(0, 3)}.${text.substring(3)}';
+      if (text.length > 6) formattedText = '${formattedText.substring(0, 7)}.${text.substring(6)}';
+      if (text.length > 9) formattedText = '${formattedText.substring(0, 11)}-${text.substring(9)}';
+    } else {
+      if (text.length > 2) formattedText = '${text.substring(0, 2)}.${text.substring(2)}';
+      if (text.length > 5) formattedText = '${formattedText.substring(0, 6)}.${text.substring(5)}';
+      if (text.length > 8) formattedText = '${formattedText.substring(0, 10)}/${text.substring(8)}';
+      if (text.length > 12) formattedText = '${formattedText.substring(0, 15)}-${text.substring(12)}';
+    }
+
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
+    );
+  }
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -124,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _documentoController,
                 enabled: !_isLoading,
                 keyboardType: TextInputType.number,
+                inputFormatters: [CpfCnpjFormatter()],
                 style: const TextStyle(fontFamily: 'Montserrat'),
                 decoration: InputDecoration(
                   labelText: 'CPF/CNPJ',
