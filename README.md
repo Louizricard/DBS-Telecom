@@ -3,7 +3,7 @@
 Este repositório contém o projeto que desenvolvi para o desafio técnico da DBS Telecom. O objetivo foi criar um Produto Mínimo Viável (MVP) de um portal de autoatendimento para assinantes de provedores de internet. Todo o desenvolvimento foi concluído em um prazo de 7 dias.
 
 **Nota:** O backend construído para este projeto já encontra-se hospedado e operando em nuvem. Para avaliar o aplicativo, não é estritamente necessário configurar o ambiente local. Basta realizar o download e instalação do aplicativo (APK) em um dispositivo Android.
-- **Onde encontrar o APK:** O arquivo de instalação está disponível na aba de **Releases** do GitHub (ou caso prefira, diretamente na pasta `mobile/mobile/build/app/outputs/flutter-apk/app-release.apk` deste repositório).
+- **Onde encontrar o APK:** O arquivo de instalação está disponível na aba de **Releases** do GitHub. Para gerá-lo localmente (requer Android SDK), rode `flutter build apk --release` em `mobile/mobile`; o arquivo sai em `mobile/mobile/build/app/outputs/flutter-apk/app-release.apk`.
 - **Como instalar:** Transfira o arquivo para o seu smartphone Android, abra-o através do gerenciador de arquivos e autorize a instalação de "fontes desconhecidas" (padrão de segurança do Android para apps externos). Após isso, o app estará pronto para uso conectando-se diretamente ao backend na nuvem.
 
 ## Arquitetura e Segurança
@@ -39,9 +39,10 @@ Para testar o ambiente localmente, é necessário rodar o backend em Python e em
 3. Instale as dependências executando `pip install -r requirements.txt`
 4. Crie um arquivo `.env` na raiz do backend contendo as variáveis de ambiente necessárias:
    ```env
-   IXC_URL="https://demo.ixcsoft.com.br/webservice/v1"
-   IXC_TOKEN="seu_token_aqui"
+   IXC_API_URL="https://demo.ixcsoft.com.br/webservice/v1"
+   IXC_API_TOKEN="seu_token_aqui"
    ```
+   Há um modelo pronto em `backend/.env.example`: `cp .env.example .env`.
 5. Inicie o servidor localmente com o comando: `uvicorn app.main:app --reload`
 
 ### App Mobile

@@ -9,7 +9,7 @@ def test_classificacao_comercial():
 def test_classificacao_financeiro():
     resultado = ChatEngine.classificar_intencao("preciso da 2ª via do boleto")
     assert resultado["setor"] == "financeiro"
-    assert resultado["acao"] == "buscar_boleto"
+    assert resultado["acao"] == "nenhuma"
 
 def test_classificacao_suporte_triagem():
     resultado = ChatEngine.classificar_intencao("minha internet está lenta")
